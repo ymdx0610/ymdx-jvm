@@ -82,7 +82,7 @@ Java 中的堆是 JVM 所管理的最大的一块内存空间，主要用于存�
 
 默认的，新生代 ( Young ) 与老年代 ( Old ) 的比例的值为 1:2 ( 该值可以通过参数 –XX:NewRatio 来指定 )，即：新生代 ( Young ) = 1/3 的堆空间大小。老年代 ( Old ) = 2/3 的堆空间大小。  
 其中，新生代 ( Young ) 被细分为 Eden 和 两个 Survivor 区域，这两个 Survivor 区域分别被命名为 from 和 to，以示区分。  
-默认的，Edem : from : to = 8 : 1 : 1 ( 可以通过参数 –XX:SurvivorRatio 来设定 )，即： Eden = 8/10 的新生代空间大小，from = to = 1/10 的新生代空间大小。  
+默认的，Eden : from : to = 8 : 1 : 1 ( 可以通过参数 –XX:SurvivorRatio 来设定 )，即： Eden = 8/10 的新生代空间大小，from = to = 1/10 的新生代空间大小。  
 
 根据垃圾回收机制的不同，Java堆有可能拥有不同的结构，最为常见的就是将整个Java堆分为新生代和老年代。其中新生带存放新生的对象或者年龄不大的对象，老年代则存放老年对象。
 新生代分为den区、s0区、s1区，s0和s1也被称为from和to区域，他们是两块大小相等并且可以互相角色的空间。绝大多数情况下，对象首先分配在eden区，在新生代回收后，如果对象还存活，则进入s0或s1区，之后每经过一次
@@ -142,7 +142,7 @@ reference3-> 对象实例4 -> 对象实例6；   
 
 ### 复制算法
 #### 概念  
-如果jvm使用了coping算法，一开始就会将可用内存分为两块，from域和to域，每次只是使用from域，to域则空闲着。当from域内存不够了，开始执行GC操作，这个时候，会把from域存活的对象拷贝到to域,然后直接把from域进行内存清理。  
+如果jvm使用了coping算法，一开始就会将可用内存分为两块，from域和to域，每次只是使用from域，to域则空闲着。当from域内存不够了，开始执行GC操作，这个时候，会把from域存活的对象拷贝到to域，然后直接把from域进行内存清理。  
 
 #### 应用场景  
 coping算法一般是使用在新生代中，因为新生代中的对象一般都是朝生夕死的，存活对象的数量并不多，这样使用coping算法进行拷贝时效率比较高。
@@ -193,10 +193,6 @@ GC收集器就会将这些对象直接存放到Old区中，如果Survivor区中�
 <hr>
 
 ### JVM参数配置
-对于jvm内存配置参数：  
-```text
--Xmx10240m -Xms10240m -Xmn5120m -XXSurvivorRatio=3 
-```
 
 #### 常见参数配置
 
@@ -216,30 +212,38 @@ GC收集器就会将这些对象直接存放到Old区中，如果Survivor区中�
 #### 堆内存大小配置
 使用示例：-Xmx20m -Xms5m  
 说明：当前Java应用最大可用内存为20M，初始内存为5M  
+> 示例代码：ymdx-jvm -> jvm-param-config -> Demo01.java  
 
 #### 设置新生代比例参数
 使用示例：-Xms20m -Xmx20m -Xmn1m -XX:SurvivorRatio=2 -XX:+PrintGCDetails -XX:+UseSerialGC  
-说明：堆内存初始化值20m，堆内存最大值20m，新生代最大值可用1m，eden空间和from/to空间的比例为2/1  
+说明：堆初始化内存为20M，堆最大内存为20M，堆新生代最大内存为1M，新生代eden区与from/to区内存占比为2/1，详细打印GC日志，使用窜行垃圾收集器  
+> 示例代码：ymdx-jvm -> jvm-param-config -> Demo02.java  
 
 #### 设置新生代与老年代比例参数
-
 使用示例：-Xms20m -Xmx20m -XX:SurvivorRatio=2 -XX:+PrintGCDetails -XX:+UseSerialGC -XX:NewRatio=2  
-说明：堆内存初始化值20m,堆内存最大值20m，新生代最大值可用1m，eden空间和from/to空间的比例为2/1，新生代和老年代的占比为1/2  
+说明：堆初始化内存为20M，堆最大内存为20M，新生代eden区与from／to区内存占比为2/1，详细打印GC日志，使用窜行垃圾收集器，新生代与老年代内存占比为1/2  
+> 示例代码：ymdx-jvm -> jvm-param-config -> Demo03.java  
+
+<hr>
 
 ### 实战OutOfMemoryError异常  
 
 #### Java堆溢出
 错误原因：java.lang.OutOfMemoryError: Java heap space 堆内存溢出  
-解决办法：设置堆内存大小 // -Xms1m -Xmx10m -XX:+PrintGCDetails -XX:+HeapDumpOnOutOfMemoryError  
+解决办法：设置堆内存大小 
+```text
+-Xms1m -Xmx10m -XX:+PrintGCDetails -XX:+HeapDumpOnOutOfMemoryError  
+```
+> 示例代码：ymdx-jvm -> jvm-param-config -> OOMDemo.java  
 
 #### 虚拟机栈溢出
 错误原因：java.lang.StackOverflowError 栈内存溢出  
 栈溢出 产生于递归调用，循环遍历是不会的，但是循环方法里面产生递归调用，也会发生栈溢出。  
 解决办法：设置线程最大调用深度，例如：-Xss5m  
+> 示例代码：ymdx-jvm -> jvm-param-config -> StackOverflowDemo.java  
 
 #### 内存溢出与内存泄漏区别
-Java内存泄漏就是没有及时清理内存垃圾，导致系统无法再给你提供内存资源（内存资源耗尽）；  
-而Java内存溢出就是你要求分配的内存超出了系统能给你的，系统不能满足需求，于是产生溢出。  
+Java内存泄漏就是没有及时清理内存垃圾，导致系统无法再给你提供内存资源（内存资源耗尽）；而Java内存溢出就是你要求分配的内存超出了系统能给你的，系统不能满足需求，于是产生溢出。  
 内存溢出，这个好理解，说明存储空间不够大。就像倒水倒多了，从杯子上面溢出了来了一样。  
 内存泄漏，原理是，使用过的内存空间没有被及时释放，长时间占用内存，最终导致内存空间不足，而出现内存溢出。  
 
@@ -248,30 +252,32 @@ Java内存泄漏就是没有及时清理内存垃圾，导致系统无法再给�
 ### 垃圾收集器
 
 #### 串行与并行收集器
-串行回收: JDK1.5前的默认算法 缺点是只有一个线程，执行垃圾回收时程序停止的时间比较长  
-并行回收: 多个线程执行垃圾回收适合于吞吐量的系统，回收时系统会停止运行  
+串行回收: JDK1.5前的默认算法。缺点是只有一个线程，执行垃圾回收时程序停止的时间比较长  
+并行回收: 多个线程执行垃圾回收适合于追求高吞吐量的系统，回收时系统会停止运行  
 
 #### serial收集器
 串行收集器是最古老，最稳定以及效率高的收集器，可能会产生较长的停顿，只使用一个线程去回收。新生代、老年代使用串行回收；新生代复制算法、老年代标记-压缩；垃圾收集的过程中会Stop The World（服务暂停）  
 一个单线程的收集器，在进行垃圾收集时候，必须暂停其他所有的工作线程直到它收集结束。  
 特点：CPU利用率最高，停顿时间即用户等待时间比较长。  
 适用场景：小型应用  
-通过JVM参数-XX:+UseSerialGC可以使用串行垃圾回收器。  
+通过JVM参数```-XX:+UseSerialGC```可以使用串行垃圾回收器。  
 
 #### ParNew收集器
 ParNew收集器其实就是Serial收集器的多线程版本。新生代并行，老年代串行；新生代复制算法、老年代标记-压缩  
-参数控制：  
+参数控制：
+```text
 -XX:+UseParNewGC      ParNew收集器  
 -XX:ParallelGCThreads 限制线程数量  
+```  
 
-#### parallel 收集器
+#### parallel收集器
 Parallel Scavenge收集器类似ParNew收集器，Parallel收集器更关注系统的吞吐量。可以通过参数来打开自适应调节策略，虚拟机会根据当前系统的运行情况收集性能监控信息，
 动态调整这些参数以提供最合适的停顿时间或最大的吞吐量；也可以通过参数控制GC的时间不大于多少毫秒或者比例；新生代复制算法、老年代标记－压缩
 
-采用多线程来通过扫描并压缩堆
-特点：停顿时间短，回收效率高，对吞吐量要求高。
-适用场景：大型应用，科学计算，大规模数据采集等。
-通过JVM参数 XX:+USeParNewGC 打开并发标记扫描垃圾回收器。
+采用多线程来扫描并压缩堆  
+特点：停顿时间短，回收效率高，对吞吐量要求高。  
+适用场景：大型应用，科学计算，大规模数据采集等。  
+通过JVM参数```XX:+UseParNewGC```打开并发标记扫描垃圾回收器。  
 
 #### cms收集器
 CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器。目前很大一部分的Java应用都集中在互联网站或B/S系统的服务端上，这类应用尤其重视服务的响应速度，希望系统停顿时间最短，以给用户带来较好的体验。
@@ -297,7 +303,7 @@ CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时�
 
 特点：响应时间优先，减少垃圾收集停顿时间  
 适应场景：大型服务器等。  
-通过JVM参数 -XX:+UseConcMarkSweepGC设置  
+通过JVM参数```-XX:+UseConcMarkSweepGC```设置  
 
 #### G1收集器
 在G1中，堆被划分成 许多个连续的区域(region)。采用G1算法进行回收，吸收了CMS收集器特点。  
@@ -310,14 +316,18 @@ CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时�
 通过JVM参数 -XX:+UseG1GC 使用G1垃圾回收器  
 注意: 并发是指一个处理器同时处理多个任务。   
 并行是指多个处理器或者是多核的处理器同时处理多个不同的任务。  
-并发是逻辑上的同时发生（simultaneous），而并行是物理上的同时发生。   
+并发是逻辑上的同时发生（simultaneous），而并行是物理上的同时发生。  
 来个比喻：并发是一个人同时吃三个馒头，而并行是三个人同时吃三个馒头。  
+
+<hr>
 
 ### Tomcat配置调优测试
 
 #### Jmeter压力测试工具
 
-JMeter是一款在国外非常流行和受欢迎的开源性能测试工具，像LoadRunner 一样，它也提供了一个利用本地Proxy Server（代理服务器）来录制生成测试脚本的功能，但是这个功能并不好用。
+[官方下载地址](http://jmeter.apache.org/download_jmeter.cgi)  
+
+JMeter是一款在国外非常流行和受欢迎的开源性能测试工具，像LoadRunner一样，它也提供了一个利用本地Proxy Server（代理服务器）来录制生成测试脚本的功能，但是这个功能并不好用。
 所以在本文中介绍一个更为常用的方法——使用Badboy录制生成 JMeter 脚本。简单的介绍一下Badboy。Badboy是一款不错的Web自动化测试工具，如果你将它用于非商业用途，或者用于商业用途但是安装Badboy 的机器数量不超过5台，你是不需要为它支付任何费用的。
 也许是一种推广策略，Badboy提供了将Web测试脚本直接导出生成JMeter 脚本的功能，并且这个功能非常好用，也非常简单。你可以跟着下面的试验步骤来迈出你在开源世界的第一步。  
 1. 通过Badboy的官方网站下载Badboy的最新版本；  
@@ -336,7 +346,7 @@ JMeter是一款在国外非常流行和受欢迎的开源性能测试工具，�
 我相信在这个过程中你将会了解到更多有关性能测试的知识和经验，甚至包括一些LoadRunner等商业测试工具所无法提供给你的经验。  
 
 #### 什么是吞吐量
-QPS：Queries Per Second意思是“每秒查询率”，是一台服务器每秒能够相应的查询次数，是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准。  
+QPS：Queries Per Second意思是“每秒查询率”，是一台服务器每秒能够响应的查询次数，是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准。  
 
 测试串行吞吐量  
 ```text
@@ -363,7 +373,7 @@ GC 回收次数6次 吞吐量5141
 结论:垃圾回收次数和设置最大堆内存大小无关，只和初始内存有关系。
 初始内存会影响吞吐量。
 ```
-调整初始堆
+调整初始堆  
 ```text
 -XX:+PrintGCDetails -Xmx512M –Xms512M
 -XX:+HeapDumpOnOutOfMemoryError
@@ -372,7 +382,7 @@ GC 回收次数6次 吞吐量5141
 GC回收次数0次 吞吐量6561次
 结论：堆的初始值和最大堆内存一致，并且初始堆越大就会高。
 ```
-并行回收（UseParNewGC）
+并行回收（UseParNewGC）  
 ```text
 -XX:+PrintGCDetails -Xmx512M -Xms512M
 -XX:+HeapDumpOnOutOfMemoryError
@@ -380,20 +390,21 @@ GC回收次数0次 吞吐量6561次
 -XX:PermSize=32M
 GC回收0次 吞吐量6800
 ```
-CMS收集器 
+CMS收集器  
 ```text
 -XX:+PrintGCDetails -Xmx512M -Xms512M
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseConcMarkSweepGC 
 -XX:PermSize=32M
 ```
-G1回收方式
+G1回收方式  
 ```text
 -XX:+PrintGCDetails -Xmx512M -Xms512M
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseG1GC
 -XX:PermSize=32M
 ```
+
 #### 调优总结
 初始堆值和最大堆内存内存越大，吞吐量就越高。  
 最好使用并行收集器,因为并行收集器速度比串行吞吐量高，速度快。  
@@ -402,11 +413,11 @@ G1回收方式
 
 <hr>
 
-### 垃圾回收策略
+### 垃圾回收策略  
 
-#### 理解GC日志
+#### 理解GC日志  
 
-#### Minor GC和Full GC区别
+#### Minor GC和Full GC区别  
 新生代 GC（Minor GC）：指发生在新生代的垃圾收集动作，因为 Java 对象大多都具备朝生夕灭的特性，所以 Minor GC 非常频繁，一般回收速度也比较快。  
 老年代 GC（Major GC / Full GC）：指发生在老年代的 GC，出现了 Major GC，经常会伴随至少一次的 Minor GC（但非绝对的，在 ParallelScavenge 收集器的收集策略里就有直接进行 Major GC 的策略选择过程）。
 MajorGC 的速度一般会比 Minor GC 慢 10倍以上。  
