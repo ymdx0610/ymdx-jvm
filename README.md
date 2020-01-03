@@ -323,27 +323,11 @@ CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时�
 
 ### Tomcat配置调优测试
 
+> 示例项目：ymdx-jvm -> jvm-web-test  
+
 #### Jmeter压力测试工具
 
 [官方下载地址](http://jmeter.apache.org/download_jmeter.cgi)  
-
-JMeter是一款在国外非常流行和受欢迎的开源性能测试工具，像LoadRunner一样，它也提供了一个利用本地Proxy Server（代理服务器）来录制生成测试脚本的功能，但是这个功能并不好用。
-所以在本文中介绍一个更为常用的方法——使用Badboy录制生成 JMeter 脚本。简单的介绍一下Badboy。Badboy是一款不错的Web自动化测试工具，如果你将它用于非商业用途，或者用于商业用途但是安装Badboy 的机器数量不超过5台，你是不需要为它支付任何费用的。
-也许是一种推广策略，Badboy提供了将Web测试脚本直接导出生成JMeter 脚本的功能，并且这个功能非常好用，也非常简单。你可以跟着下面的试验步骤来迈出你在开源世界的第一步。  
-1. 通过Badboy的官方网站下载Badboy的最新版本；  
-2. 安装Badboy。安装过程同一般的Windows 应用程序没有什么区别，安装完成后你可以在桌面和Windows开始菜单中看到相应的快捷方式——如果找不到，可以找一下Badboy安装目录下的Badboy.exe 文件，直接双击启动Badboy；  
-3. 启动Badboy，你可以看到下面的界面。  
-
-在地址栏（图中红色方框标注的部分）中输入你需要录制的Web应用的URL——这里我们以http://www.yahoo.com 为例，并点击GO 按钮开始录制。如果你用过LoadRunner之类的商业工具，对于这个操作一定不会陌生吧 ^_^  
-4. 开始录制后，你可以直接在Badboy内嵌的浏览器（主界面的右侧）中对被测应用进行操作，所有的操作都会被记录在主界面左侧的编辑窗口中——在这个试验中，我们在Yahoo的搜索引擎中输入 JMeter 进行搜索。
-不过你将看到，录制下来的脚本并不是一行行的代码，而是一个个Web对象——这就有点像LoadRunner的VuGen中的Tree View视图；  
-5. 录制完成后，点击工具栏中的“停止录制”按钮，完成脚本的录制；  
-6. 选择“File -> Export to JMeter”菜单，填写文件名“login_mantis.jmx”，将录制好脚本导出为JMeter脚本格式。也可以选择“File -> Save”菜单保存为Badboy脚本；  
-7. 启动JMeter并打开刚刚生成的测试脚本。  
-
-也许你已经急不可待的准备开始尝试着用JMeter处理你手头的工作了^_^ 在下面的几节，我将继续为大家介绍如何在 JMeter 中完成一个测试场景的设置和JMeter测试结果分析入门，以及如何参数化JMeter脚本。  
-当然，如果你的动手能力很强，几分钟你就可以熟悉这些内容。不过还是请允许我一点点由浅入深的来帮大家完成“JMeter从入门到精通”的过程。
-我相信在这个过程中你将会了解到更多有关性能测试的知识和经验，甚至包括一些LoadRunner等商业测试工具所无法提供给你的经验。  
 
 #### 什么是吞吐量
 QPS：Queries Per Second意思是“每秒查询率”，是一台服务器每秒能够响应的查询次数，是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准。  
@@ -355,13 +339,11 @@ QPS：Queries Per Second意思是“每秒查询率”，是一台服务器每�
 -XX:+UseSerialGC
 -XX:PermSize=32M
 
-GC 回收次数25次 吞吐量4662
+GC回收次数25次，吞吐量4662
  
-堆的初始值和堆的最大一致
-加大初始堆内存大小-Xms1M 修改为32m
-
-GC 回收次数7次 吞吐量5144
+设置堆的初始值和堆的最大值一致，加大初始堆内存大小，将-Xms1M修改为-Xms32M，GC回收次数7次，吞吐量5144
 ```
+
 扩大堆的内存  
 ```text
 -XX:+PrintGCDetails -Xmx512M -Xms32M
@@ -369,27 +351,31 @@ GC 回收次数7次 吞吐量5144
 -XX:+UseSerialGC
 -XX:PermSize=32M
 
-GC 回收次数6次 吞吐量5141
-结论:垃圾回收次数和设置最大堆内存大小无关，只和初始内存有关系。
-初始内存会影响吞吐量。
+GC回收次数6次，吞吐量5141
+结论：垃圾回收次数和设置最大堆内存大小无关，只和初始内存有关系。
+初始内存会影响吞吐量。  
 ```
+
 调整初始堆  
 ```text
 -XX:+PrintGCDetails -Xmx512M –Xms512M
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseSerialGC
 -XX:PermSize=32M
-GC回收次数0次 吞吐量6561次
-结论：堆的初始值和最大堆内存一致，并且初始堆越大就会高。
+
+GC回收次数0次，吞吐量6561次
+结论：堆的初始值和最大堆内存一致，并且初始堆越大就会越高。 
 ```
+
 并行回收（UseParNewGC）  
 ```text
 -XX:+PrintGCDetails -Xmx512M -Xms512M
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseParNewGC
 -XX:PermSize=32M
-GC回收0次 吞吐量6800
+GC回收0次，吞吐量6800
 ```
+
 CMS收集器  
 ```text
 -XX:+PrintGCDetails -Xmx512M -Xms512M
@@ -397,6 +383,7 @@ CMS收集器
 -XX:+UseConcMarkSweepGC 
 -XX:PermSize=32M
 ```
+
 G1回收方式  
 ```text
 -XX:+PrintGCDetails -Xmx512M -Xms512M
@@ -492,24 +479,24 @@ BCEL与javassist有不同的处理字节码方法，BCEL在实际的jvm指令层
 是一个轻量级Java字节码操作框架，直接涉及到JVM底层的操作和指令  
 高性能，高质量  
 
-- CGLB
+- CGLIB
 生成类库，基于ASM实现  
 
 - javassist  
-是一个开源的分析，编辑和创建Java字节码的类库。性能较ASM差，跟cglib差不多，但是使用简单。很多开源框架都在使用它。
+是一个开源的框架，编辑和创建Java字节码的类库。性能较ASM差，跟cglib差不多，但是使用简单。很多开源框架都在使用它。  
+javassist 的最外层的API和JAVA的反射包中的API颇为类似。它主要由 CtClass， CtMethod 以及 CtField 几个类组成。用以执行和JDK反射API中 java.lang.Class，java.lang.reflect.Method，java.lang.reflect.Method.Field 相同的操作。  
 
 #### javassist优势：  
-– 比反射开销小，性能高。  
-javassist性能高于反射，低于ASM  
+比反射开销小，性能高。javassist性能高于反射，低于ASM  
+
 运行时操作字节码可以让我们实现如下功能：  
-– 动态生成 新的类  
-– 动态改变某个类的结构 ( 添加 / 删除 / 修改   新的属性 / 方法 )  
-javassist 的最外层的 API 和 JAVA 的反射包中的 API 颇为 类似 。  
-它主要由 CtClass， CtMethod 以及 CtField 几个类组成。用以执行和 JDK 反射 API 中 java.lang.Class，java.lang.reflect.Method，java.lang.reflect.Method.Field 相同的操作。  
+1. 动态生成新的类  
+2. 动态改变某个类的结构 ( 添加、删除、修改新的属性或方法 )  
+
 方法操作
 – 修改已有方法的方法体（插入代码到已有方法体）  
-– 新增方法 删除方法  
-
+– 新增方法  
+- 删除方法  
 
 #### javassist的局限性  
 JDK5.0 新语法不支持 ( 包括泛型、枚举 ) ，不支持注解修改，但可以通过底层的 javassist 类来解决，具体参考：javassist.bytecode.annotation  
@@ -662,80 +649,15 @@ defineClass()方法是用来将byte字节流解析成JVM能够识别的Class对�
 2、Java热部署与热加载的区别  
 - 部署方式  
 热部署在服务器运行时重新部署项目  
-热加载在运行时重新加载class 
+热加载在运行时重新加载class  
  
 - 实现原理  
 热部署直接重新加载整个应用  
-热加载在运行时重新加载class 
+热加载在运行时重新加载class  
  
 - 使用场景  
 热部署更多的是在生产环境使用  
 热加载则更多的实在开发环境使用  
 
 <hr>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
