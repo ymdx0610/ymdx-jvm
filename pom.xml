@@ -12,6 +12,7 @@
         <module>jvm-param-config</module>
         <module>jvm-web-test</module>
         <module>jvm-bytecode</module>
+        <module>jvm-classloader</module>
     </modules>
 
     <properties>

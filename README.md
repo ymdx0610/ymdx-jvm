@@ -455,6 +455,8 @@ VisualVM 是一款免费的，集成了多个 JDK 命令行工具的可视化工
 
 ### 字节码技术
 
+> 示例项目：ymdx-jvm -> jvm-bytecode  
+
 #### 字节码技术应用场景
 AOP技术、Lombok去除重复代码插件、动态修改class文件等  
 
@@ -471,9 +473,9 @@ Java字节码增强指的是在Java字节码生成之后，对其进行修改，
 #### 常见的字节码操作类库
 
 - BCEL
-Byte Code Engineering Library(BCEL)，这是Apache Software Foundation的Jakarta项目的一部分。
-BCEL是Java classworking 广泛使用的一种框架，它可以让您深入jvm汇编语言进行类库操作的细节。
-BCEL与javassist有不同的处理字节码方法，BCEL在实际的jvm指令层次上进行操作(BCEL拥有丰富的jvm指令集支持) 而javassist所强调的是源代码级别的工作。  
+Byte Code Engineering Library(BCEL)，这是Apache Software Foundation的Jakarta项目的一部分。  
+BCEL是Java classworking 广泛使用的一种框架，它可以让您深入jvm汇编语言进行类库操作的细节。  
+BCEL与javassist有不同的处理字节码方法，BCEL在实际的jvm指令层次上进行操作（BCEL拥有丰富的jvm指令集支持），而javassist所强调的是源代码级别的工作。    
 
 - ASM
 是一个轻量级Java字节码操作框架，直接涉及到JVM底层的操作和指令  
@@ -510,15 +512,13 @@ class B extends A {} 
 class C extends B {}
 ```
 
-#### 使用Javassist创建类
-
-#### 使用Javassist修改类文件信息
-
 <hr>
 
-### 类加载器
+### 类加载器  
 
-#### 类加载的机制的层次结构
+> 示例项目：ymdx-jvm -> jvm-classloader  
+
+#### 类加载机制的层次结构
 每个编写的”.java”拓展名类文件都存储着需要执行的程序逻辑，这些”.java”文件经过Java编译器编译成拓展名为”.class”的文件，”.class”文件中保存着Java代码经转换后的虚拟机指令，
 当需要使用某个类时，虚拟机将会加载它的”.class”文件，并创建对应的class对象，将class文件加载到虚拟机的内存，这个过程称为类加载，这里我们需要了解一下类加载的过程，如下：  
 Jvm执行class文件  
@@ -541,10 +541,10 @@ Jvm执行class文件
 解析：虚拟机常量池的符号引用替换为字节引用过程  
 
 #### 步骤三：初始化  
-初始化阶段是执行类构造器<clinit>（）方法的过程。类构造器<clinit>（）方法是由编译器自动收藏类中的所有类变量的赋值动作和静态语句块(static块)中的语句合并产生，代码从上往下执行。  
+初始化阶段是执行类构造器```<clinit>()```方法的过程。类构造器```<clinit>()```方法是由编译器自动收藏类中的所有类变量的赋值动作和静态语句块（static块）中的语句合并产生，代码从上往下执行。  
 当初始化一个类的时候，如果发现其父类还没有进行过初始化，则需要先触发其父类的初始化  
-虚拟机会保证一个类的<clinit>（）方法在多线程环境中被正确加锁和同步  
-当范围一个Java类的静态域时，只有真正声名这个域的类才会被初始化  
+虚拟机会保证一个类的```<clinit>()```方法在多线程环境中被正确加锁和同步  
+当范围一个Java类的静态域时，只有真正声明这个域的类才会被初始化  
 
 #### 类加载器的层次结构
 启动（Bootstrap）类加载器  
@@ -554,24 +554,24 @@ Jvm执行class文件
 ![](images/类加载器层次结构.png)  
 
 #### 启动（Bootstrap）类加载器
-启动类加载器主要加载的是JVM自身需要的类，这个类加载使用C++语言实现的，是虚拟机自身的一部分，它负责将 <JAVA_HOME>/lib路径下的核心类库或-Xbootclasspath参数指定的路径下的jar包加载到内存中，
-注意必由于虚拟机是按照文件名识别加载jar包的，如rt.jar，如果文件名不被虚拟机识别，即使把jar包丢到lib目录下也是没有作用的(出于安全考虑，Bootstrap启动类加载器只加载包名为java、javax、sun等开头的类)。  
+启动类加载器主要加载的是JVM自身需要的类，这个类加载使用C++语言实现的，是虚拟机自身的一部分，它负责将<JAVA_HOME>/lib路径下的核心类库或-Xbootclasspath参数指定的路径下的jar包加载到内存中，
+注意必由于虚拟机是按照文件名识别加载jar包的，如rt.jar，如果文件名不被虚拟机识别，即使把jar包丢到lib目录下也是没有作用的（出于安全考虑，Bootstrap启动类加载器只加载包名为java、javax、sun等开头的类）。  
 
 #### 扩展（Extension）类加载器
-扩展类加载器是指Sun公司(已被Oracle收购)实现的sun.misc.Launcher$ExtClassLoader类，由Java语言实现的，是Launcher的静态内部类，
+扩展类加载器是指Sun公司（已被Oracle收购）实现的sun.misc.Launcher$ExtClassLoader类，由Java语言实现的，是Launcher的静态内部类，
 它负责加载<JAVA_HOME>/lib/ext目录下或者由系统变量-Djava.ext.dir指定位路径中的类库，开发者可以直接使用标准扩展类加载器。  
 
 #### 系统（System）类加载器
-也称应用程序加载器是指 Sun公司实现的sun.misc.Launcher$AppClassLoader。它负责加载系统类路径java -classpath或-D java.class.path 指定路径下的类库，也就是我们经常用到的classpath路径，
-开发者可以直接使用系统类加载器，一般情况下该类加载是程序中默认的类加载器，通过ClassLoader#getSystemClassLoader()方法可以获取到该类加载器。  
+也称应用程序加载器是指Sun公司实现的sun.misc.Launcher$AppClassLoader。它负责加载系统类路径java -classpath或-Djava.class.path 指定路径下的类库，也就是我们经常用到的classpath路径，
+开发者可以直接使用系统类加载器，一般情况下该类加载器是程序中默认的类加载器，通过ClassLoader#getSystemClassLoader()方法可以获取到该类加载器。  
 在Java的日常应用程序开发中，类的加载几乎是由上述3种类加载器相互配合执行的，在必要时，我们还可以自定义类加载器，需要注意的是，Java虚拟机对class文件采用的是按需加载的方式，
-也就是说当需要使用该类时才会将它的class文件加载到内存生成class对象，而且加载某个类的class文件时，Java虚拟机采用的是双亲委派模式即把请求交由父类处理，它是一种任务委派模式。  
+也就是说当需要使用该类时才会将它的class文件加载到内存生成class对象，而且加载某个类的class文件时，Java虚拟机采用的是双亲委派模式，即把请求交由父类处理，它是一种任务委派模式。  
 
 #### 理解双亲委派模式
 采用双亲委派模式的是好处是Java类随着它的类加载器一起具备了一种带有优先级的层次关系，通过这种层级关可以避免类的重复加载，当父亲已经加载了该类时，就没有必要子ClassLoader再加载一次。
 其次是考虑到安全因素，java核心api中定义类型不会被随意替换，假设通过网络传递一个名为java.lang.Integer的类，通过双亲委托模式传递到启动类加载器，而启动类加载器在核心Java API发现这个名字的类，
 发现该类已被加载，并不会重新加载网络传递的过来的java.lang.Integer，而直接返回已加载过的Integer.class，这样便可以防止核心API库被随意篡改。
-可能你会想，如果我们在classpath路径下自定义一个名为java.lang.SingleInterge类(该类是胡编的)呢？该类并不存在java.lang中，经过双亲委托模式，传递到启动类加载器中，
+可能你会想，如果我们在classpath路径下自定义一个名为java.lang.SingleInteger类（该类是胡编的）呢？该类并不存在java.lang中，经过双亲委托模式，传递到启动类加载器中，
 由于父类加载器路径下并没有该类，所以不会加载，将反向委托给子类加载器加载，最终会通过系统类加载器加载该类。但是这样做是不允许，因为java.lang是核心API包，需要访问权限，
 强制加载将会报出如下异常java.lang.SecurityException: Prohibited package name: java.lang  
 
@@ -581,20 +581,20 @@ Jvm执行class文件
 
 双亲委派模式是在Java 1.2后引入的，其工作原理的是，如果一个类加载器收到了类加载请求，它并不会自己先去加载，而是把这个请求委托给父类的加载器去执行，如果父类加载器还存在其父类加载器，
 则进一步向上委托，依次递归，请求最终将到达顶层的启动类加载器，如果父类加载器可以完成类加载任务，就成功返回，倘若父类加载器无法完成此加载任务，子加载器才会尝试自己去加载，这就是双亲委派模式，
-即每个儿子都很懒，每次有活就丢给父亲去干，直到父亲说这件事我也干不了时，儿子自己想办法去完成，这不就是传说中的实力坑爹啊？那么采用这种模式有啥用呢?  
+即每个儿子都很懒，每次有活就丢给父亲去干，直到父亲说这件事我也干不了时，儿子自己想办法去完成，这不就是传说中的实力坑爹吗？那么采用这种模式有啥用呢?  
 
 #### 双亲委派模式优势
 采用双亲委派模式的是好处是Java类随着它的类加载器一起具备了一种带有优先级的层次关系，通过这种层级关可以避免类的重复加载，当父亲已经加载了该类时，就没有必要子ClassLoader再加载一次。
 其次是考虑到安全因素，java核心api中定义类型不会被随意替换，假设通过网络传递一个名为java.lang.Integer的类，通过双亲委托模式传递到启动类加载器，而启动类加载器在核心Java API发现这个名字的类，
 发现该类已被加载，并不会重新加载网络传递的过来的java.lang.Integer，而直接返回已加载过的Integer.class，这样便可以防止核心API库被随意篡改。
-可能你会想，如果我们在classpath路径下自定义一个名为java.lang.SingleInterge类(该类是胡编的)呢？该类并不存在java.lang中，经过双亲委托模式，传递到启动类加载器中，由于父类加载器路径下并没有该类，
+可能你会想，如果我们在classpath路径下自定义一个名为java.lang.SingleInteger类（该类是胡编的）呢？该类并不存在java.lang中，经过双亲委托模式，传递到启动类加载器中，由于父类加载器路径下并没有该类，
 所以不会加载，将反向委托给子类加载器加载，最终会通过系统类加载器加载该类。但是这样做是不允许，因为java.lang是核心API包，需要访问权限。    
 
 #### 类加载器间的关系
-我们进一步了解类加载器间的关系(并非指继承关系)，主要可以分为以下4点  
+我们进一步了解类加载器间的关系（并非指继承关系），主要可以分为以下4点  
 启动类加载器，由C++实现，没有父类。  
-拓展类加载器(ExtClassLoader)，由Java语言实现，父类加载器为null  
-系统类加载器(AppClassLoader)，由Java语言实现，父类加载器为ExtClassLoader  
+拓展类加载器（ExtClassLoader），由Java语言实现，父类加载器为null  
+系统类加载器（AppClassLoader），由Java语言实现，父类加载器为ExtClassLoader  
 自定义类加载器，父类加载器肯定为AppClassLoader。  
 
 #### 类加载器常用方法
@@ -605,18 +605,18 @@ Jvm执行class文件
 该方法中的逻辑就是双亲委派模式的实现，其源码如下，loadClass(String name, boolean resolve)是一个重载方法，resolve参数代表是否生成class对象的同时进行解析相关操作。  
 正如loadClass方法所展示的，当类加载请求到来时，先从缓存中查找该类对象，如果存在直接返回，如果不存在则交给该类加载去的父加载器去加载，倘若没有父加载则交给顶级启动类加载器去加载，
 最后倘若仍没有找到，则使用findClass()方法去加载（关于findClass()稍后会进一步介绍）。从loadClass实现也可以知道如果不想重新定义加载类的规则，也没有复杂的逻辑，只想在运行时加载自己指定的类，
-那么我们可以直接使用this.getClass().getClassLoder.loadClass("className")，这样就可以直接调用ClassLoader的loadClass方法获取到class对象。  
+那么我们可以直接使用this.getClass().getClassLoader.loadClass("className")，这样就可以直接调用ClassLoader的loadClass方法获取到class对象。  
 
 - findClass(String)  
 
 在JDK1.2之前，在自定义类加载时，总会去继承ClassLoader类并重写loadClass方法，从而实现自定义的类加载类，但是在JDK1.2之后已不再建议用户去覆盖loadClass()方法，
 而是建议把自定义的类加载逻辑写在findClass()方法中，从前面的分析可知，findClass()方法是在loadClass()方法中被调用的，当loadClass()方法中父加载器加载失败后，
 则会调用自己的findClass()方法来完成类加载，这样就可以保证自定义的类加载器也符合双亲委托模式。需要注意的是ClassLoader类中并没有实现findClass()方法的具体代码逻辑，
-取而代之的是抛出ClassNotFoundException异常，同时应该知道的是findClass方法通常是和defineClass方法一起使用的(稍后会分析)  
+取而代之的是抛出ClassNotFoundException异常，同时应该知道的是findClass方法通常是和defineClass方法一起使用的  
 
 - defineClass(byte[] b, int off, int len)  
 
-defineClass()方法是用来将byte字节流解析成JVM能够识别的Class对象(ClassLoader中已实现该方法逻辑)，通过这个方法不仅能够通过class文件实例化class对象，
+defineClass()方法是用来将byte字节流解析成JVM能够识别的Class对象（ClassLoader中已实现该方法逻辑），通过这个方法不仅能够通过class文件实例化class对象，
 也可以通过其他方式实例化class对象，如通过网络接收一个类的字节码，然后转换为byte字节流创建对应的Class对象，defineClass()方法通常与findClass()方法一起使用，
 一般情况下，在自定义类加载器时，会直接覆盖ClassLoader的findClass()方法并编写加载规则，取得要加载类的字节码后转换成流，然后调用defineClass()方法生成类的Class对象  
 
@@ -632,8 +632,8 @@ defineClass()方法是用来将byte字节流解析成JVM能够识别的Class对�
 
 首先通过java编译器，将java文件编译成class字节码，类加载器读取class字节码，再将类转化为实例，对实例newInstance就可以生成对象。  
 类加载器ClassLoader功能，也就是将class字节码转换到类的实例。  
-在java应用中，所有的实例都是由类加载器，加载而来。  
-一般在系统中，类的加载都是由系统自带的类加载器完成，而且对于同一个全限定名的java类（如com.csiar.soc.HelloWorld），只能被加载一次，而且无法被卸载。  
+在java应用中，所有的实例都是由类加载器加载而来。  
+一般在系统中，类的加载都是由系统自带的类加载器完成，而且对于同一个全限定名的java类（如com.ymdx.jvm.HelloWorld），只能被加载一次，而且无法被卸载。  
 这个时候问题就来了，如果我们希望将java类卸载，并且替换更新版本的java类，该怎么做呢？  
 既然在类加载器中，java类只能被加载一次，并且无法卸载。那是不是可以直接把类加载器给换了？答案是可以的，我们可以自定义类加载器，并重写ClassLoader的findClass方法。想要实现热部署可以分以下三个步骤：  
 1. 销毁该自定义ClassLoader  
@@ -643,7 +643,7 @@ defineClass()方法是用来将byte字节流解析成JVM能够识别的Class对�
 #### Java热部署与热加载
 
 1、Java热部署与热加载的联系  
-- 不重启服务器编译/部署项目  
+- 不重启服务器编译／部署项目  
 - 基于Java的类加载器实现  
 
 2、Java热部署与热加载的区别  
@@ -657,7 +657,7 @@ defineClass()方法是用来将byte字节流解析成JVM能够识别的Class对�
  
 - 使用场景  
 热部署更多的是在生产环境使用  
-热加载则更多的实在开发环境使用  
+热加载则更多的是在开发环境使用  
 
 <hr>
 
