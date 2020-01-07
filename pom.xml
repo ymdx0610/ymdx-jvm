@@ -8,12 +8,6 @@
     <artifactId>ymdx-jvm</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
-    <modules>
-        <module>jvm-param-config</module>
-        <module>jvm-web-test</module>
-        <module>jvm-bytecode</module>
-        <module>jvm-classloader</module>
-    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -29,6 +23,13 @@
         <commons-lang3.version>3.9</commons-lang3.version>
         <junit.version>4.12</junit.version>
     </properties>
+
+    <modules>
+        <module>jvm-param-config</module>
+        <module>jvm-web-test</module>
+        <module>jvm-bytecode</module>
+        <module>jvm-classloader</module>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
